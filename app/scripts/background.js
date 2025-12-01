@@ -1596,23 +1596,34 @@ async function triggerUi() {
 }
 
 // It adds the "App Installed" event into a queue of events, which will be tracked only after a user opts into metrics.
-const addAppInstalledEvent = () => {
+const addAppInstalledEvent = async () => {
   if (controller) {
     controller.metaMetricsController.updateTraits({
       [MetaMetricsUserTrait.InstallDateExt]: new Date()
         .toISOString()
         .split('T')[0], // yyyy-mm-dd
     });
+
+    const deferredDeepLink =
+      await controller.appStateController.setDeferredDeepLink();
+
+    const eventProperties = {};
+
+    if (deferredDeepLink) {
+      eventProperties.installSource = 'deeplink';
+      eventProperties.deepLinkPath = deferredDeepLink.referringLink;
+    }
+
     controller.metaMetricsController.addEventBeforeMetricsOptIn({
       category: MetaMetricsEventCategory.App,
       event: MetaMetricsEventName.AppInstalled,
-      properties: {},
+      properties: eventProperties,
     });
     return;
   }
-  setTimeout(() => {
+  setTimeout(async () => {
     // If the controller is not set yet, we wait and try to add the "App Installed" event again.
-    addAppInstalledEvent();
+    await addAppInstalledEvent();
   }, 500);
 };
 
@@ -1623,7 +1634,7 @@ const addAppInstalledEvent = () => {
  */
 async function handleOnInstalled([details]) {
   if (details.reason === 'install') {
-    onInstall();
+    await onInstall();
   } else if (details.reason === 'update') {
     const { previousVersion } = details;
     if (!previousVersion || previousVersion === platform.getVersion()) {
@@ -1637,9 +1648,9 @@ async function handleOnInstalled([details]) {
 /**
  * Trigger actions that should happen only upon initial install (e.g. open tab for onboarding).
  */
-function onInstall() {
+async function onInstall() {
   log.debug('First install detected');
-  addAppInstalledEvent();
+  await addAppInstalledEvent();
   if (!process.env.IN_TEST && !process.env.METAMASK_DEBUG) {
     platform.openExtensionInBrowser();
   }

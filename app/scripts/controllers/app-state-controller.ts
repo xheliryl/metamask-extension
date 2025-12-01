@@ -60,6 +60,8 @@ import {
   DefaultSubscriptionPaymentOptions,
   ShieldSubscriptionMetricsPropsFromUI,
 } from '../../../shared/types';
+import { getDeferredDeepLinkFromCookie } from '../../../shared/lib/deep-links/utils';
+import type { DeferredDeepLink } from '../../../shared/lib/deep-links/types';
 import type {
   Preferences,
   PreferencesControllerGetStateAction,
@@ -155,6 +157,7 @@ export type AppStateControllerState = {
   dappSwapComparisonData?: {
     [uniqueId: string]: DappSwapComparisonData;
   };
+  deferredDeepLink?: DeferredDeepLink;
 
   /**
    * The properties for the Shield subscription metrics.
@@ -708,6 +711,12 @@ const controllerMetadata: StateMetadata<AppStateControllerState> = {
   dappSwapComparisonData: {
     includeInStateLogs: false,
     persist: false,
+    includeInDebugSnapshot: false,
+    usedInUi: true,
+  },
+  deferredDeepLink: {
+    includeInStateLogs: true,
+    persist: true,
     includeInDebugSnapshot: false,
     usedInUi: true,
   },
@@ -1707,5 +1716,23 @@ export class AppStateController extends BaseController<
     uniqueId: string,
   ): DappSwapComparisonData | undefined {
     return this.state.dappSwapComparisonData?.[uniqueId] ?? undefined;
+  }
+
+  /**
+   * Retrieves the deferred deep link from the browser cookie
+   * if available, and updates the state.
+   *
+   * @returns DeferredDeepLink data if available, null otherwise.
+   */
+  async setDeferredDeepLink(): Promise<DeferredDeepLink | null> {
+    const deferredDeepLink = await getDeferredDeepLinkFromCookie();
+
+    if (deferredDeepLink) {
+      this.update((state) => {
+        state.deferredDeepLink = deferredDeepLink;
+      });
+    }
+
+    return deferredDeepLink;
   }
 }
