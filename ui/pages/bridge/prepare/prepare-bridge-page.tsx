@@ -78,6 +78,7 @@ import {
   formatTokenAmount,
   isQuoteExpiredOrInvalid as isQuoteExpiredOrInvalidUtil,
 } from '../utils/quote';
+import { useRefreshSmartTransactionsLiveness } from '../hooks/useRefreshSmartTransactionsLiveness';
 import { isNetworkAdded } from '../../../ducks/bridge/utils';
 import MascotBackgroundAnimation from '../../swaps/mascot-background-animation/mascot-background-animation';
 import { Column } from '../layout';
@@ -125,6 +126,8 @@ const PrepareBridgePage = ({
   const t = useI18nContext();
 
   const fromChain = useSelector(getFromChain);
+
+  useRefreshSmartTransactionsLiveness(fromChain);
 
   const isSwap = useSelector(getIsSwap);
 
