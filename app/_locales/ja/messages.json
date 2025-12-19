@@ -442,9 +442,6 @@
   "alert": {
     "message": "アラート"
   },
-  "alertAccountTypeUpgradeMessage": {
-    "message": "アカウントをスマートアカウントにアップデートしようとしています。アカウントアドレスはそのままで、より高速なトランザクションと低いネットワーク手数料が利用できるようになります。$1"
-  },
   "alertAccountTypeUpgradeTitle": {
     "message": "アカウントタイプ"
   },
